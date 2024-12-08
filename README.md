@@ -192,7 +192,7 @@ input - image
 ## Standout Suggestions
 
 There are mutiple topics to improve. I would definitely package the model into Docker container. I already used the container on the local machine but what stopped me was that it did not have enough memory / CPU to run training or inference jobs . May be next time when I get bigger computer.
-The other interesting option was to have same endpoint hosting several models. There are many live scenarios that the dataset can be split between and trained separately and potentailly provide some benefits as we can use different tunig approaches for these models. I plan to use these suggestions in my final project
+The other interesting option was to have the same endpoint hosting several models. There are many live scenarios when the dataset can be split  and subsets trained separately and potentailly provide  benefits as we can use different tunig approaches for these models. I plan to use these suggestions in my final project
 
 ## Acknowledgement
 
