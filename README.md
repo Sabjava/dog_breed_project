@@ -1,42 +1,133 @@
-**NOTE:** This file is a template that you can use to create the README for your project. The **TODO** comments below will highlight the information you should be sure to include.
+# Dog Breed Classifier with SageMaker
 
-# Your Project Title Here
-
-**TODO:** Write a short introduction to your project.
+This project focuses on building and deploying a ML model to classify dog breeds using Amazon SageMaker. The model is trained on a dataset of labeled dog images, where each label corresponds to a specific breed.
 
 ## Project Set Up and Installation
-**OPTIONAL:** If your project has any special installation steps, this is where you should put it. To turn this project into a professional portfolio project, you are encouraged to make your `README` detailed and self-explanatory. For instance, here you could explain how to set up your project in AWS and provide helpful screenshots of the process.
+A local development environment was configured using a Docker container with Amazon SageMaker client libraries, leveraging an official image downloaded from AWS. This approach enabled seamless development and execution of code within a Jupyter Notebook environment, ensuring compatibility with SageMaker's APIs and frameworks.
+
+Using a local container allowed for efficient resource utilization by minimizing reliance on cloud-based instances during the initial stages of development. This setup also provided the flexibility to iterate quickly on the code and test functionality locally before deploying models to SageMaker. As a result, more time was spent refining the project rather than managing cloud resources.
+
 
 ## Dataset
+Training / Validateion / Test dataset contained multiple images of 133 breeds and was downloaded from AWS by
+```
+wget https://s3-us-west-1.amazonaws.com/udacity-aind/dog-project/dogImages.zip
+```
+It was downloded to local machine and later uploaded using command line aws and stored in S3
+```
+aws s3 sync
+```
+<img width="1110" alt="Screen Shot 2024-12-07 at 22 34 32" src="https://github.com/user-attachments/assets/67278ad8-5b5e-4dc4-814f-b2ef0f9ac136">
 
-### Overview
-**TODO**: Explain about the data you are using and where you got it from.
 
-### Access
-**TODO**: Explain how you are accessing the data in AWS and how you uploaded it
 
 ## Hyperparameter Tuning
-**TODO**: What kind of model did you choose for this experiment and why? Give an overview of the types of parameters and their ranges used for the hyperparameter search
+For this experiment, a pre-trained ResNet-18 model was chosen as the base architecture. 
+Hyperparameter optimization was performed to find the best configuration for training the model. The following parameters and their ranges were used for the search:
 
-Remember that your README should:
-- Include a screenshot of completed training jobs
-- Logs metrics during the training process
-- Tune at least two hyperparameters
-- Retrieve the best best hyperparameters from all your training jobs
+__Learning Rate:__
+Range: 0.0001 to 0.01
+Affects how quickly the model updates weights during training. Smaller values ensure stability, while larger values speed up convergence but may overshoot optimal points.
+
+__Batch Size:__
+Values: 16, 32, 64
+Determines the number of samples processed before the model updates its weights. Smaller sizes increase iteration frequency but require more training time.
+
+__Number of Epochs:__
+Values: 5, 10, 20
+The number of complete passes through the dataset. This was balanced to prevent overfitting while allowing sufficient training time.
+Optimizer:
+
+__Choices: Adam, SGD__
+Adam is known for its adaptive learning rate, while SGD often converges to better optima with proper tuning.
+
+Completed Hyperparameter Tuning Jobs:
+- pytorch-training-230303-0254
+- pytorch-training-230228-1100
+- pytorch-training-230227-1323
+```
+Best hyperparameters
+            job_name                  batch_size    leqrning rate           FinalObjectiveValue
+0  pytorch-training-230303-0254       "32"          0.001378                149.0
+1  pytorch-training-230228-1100       "32"          0.013671                121.0
+2  pytorch-training-230227-1323       "32"          0.082775                 55.0
+```
+
+  <img width="702" alt="Screen Shot 2024-12-07 at 22 06 21" src="https://github.com/user-attachments/assets/ca955b04-734b-4aca-a411-5fb8f3a4fb18">
+                    
 
 ## Debugging and Profiling
-**TODO**: Give an overview of how you performed model debugging and profiling in Sagemaker
+
+Debugging
+1. Enabling Debugging Hooks:
+I enabled SageMaker Debugger by specifying debugger_hook_config in the SageMaker Estimator. This automatically captured training metrics such as loss and gradients.
+2. SageMaker Debugger tracked metrics such as loss, weights, and gradients during training.
+Using SageMaker Debugger’s smdebug library, I accessed training data to visualize and analyze the training process
+
+
+```
+from sagemaker.debugger import DebuggerHookConfig
+
+debugger_hook_config = DebuggerHookConfig(
+    s3_output_path=f"s3://{BUCKET}/debug-output"  # Specify output location for debugging artifacts
+)
+```
+There were some issues found, some images were corrupted. The solution was to ignore Truncated Images: Modify the dataset loader to ignore corrupted images by wrapping the loading logic in a try-except.  I set ImageFile.LOAD_TRUNCATED_IMAGES to True globally. This allows Pillow to open truncated images without raising an error
+```
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+```
+
+Profiling
+1. Enabling Profiling Tools:
+SageMaker Profiler was configured to monitor system resource usage (CPU, GPU, memory, I/O, etc.) during training
+
+
 
 ### Results
-**TODO**: What are the results/insights did you get by profiling/debugging your model?
+```
+Epoch 1/5
+Training Loss: 2.686378387743206
+Test Loss: 2.2603519978346647
+Accuracy: 36.287425149700596%
+Epoch 2/5
+Training Loss: 1.368188729696867
+Test Loss: 2.225697808795505
+Accuracy: 41.19760479041916%
+Epoch 3/5
+Training Loss: 0.8129068861167397
+Test Loss: 1.7059940966191116
+Accuracy: 50.778443113772454%
+Epoch 4/5
+Training Loss: 0.5381081418700195
+Test Loss: 1.6437258786625333
+Accuracy: 55.5688622754491%
+Epoch 5/5
+Training Loss: 0.341343711330845
+Test Loss: 1.505983540305385
+Accuracy: 60.119760479041915%
+```
 
-**TODO** Remember to provide the profiler html/pdf file in your submission.
+<img width="666" alt="Screen Shot 2024-12-07 at 22 01 40" src="https://github.com/user-attachments/assets/2cbd8c46-bdf1-4f8b-af20-b698ff10a794">
 
 
 ## Model Deployment
-**TODO**: Give an overview of the deployed model and instructions on how to query the endpoint with a sample input.
 
-**TODO** Remember to provide a screenshot of the deployed active endpoint in Sagemaker.
+In this project, the model was deployed to an Amazon SageMaker endpoint using a PyTorch-based model that classifies dog breeds. After training the model, the deployment process allows you to invoke the model through an HTTP API endpoint. This endpoint is hosted on an Amazon SageMaker instance and can accept image inputs to classify the dog breed.
+input - image 
+
+![French_bulldog_04821](https://github.com/user-attachments/assets/9f8e8867-cfcf-4055-8fdf-50f13ffdc014)
+
+```
+{
+  "image": "bytes"
+}
+{
+  "predicted_label": "069",
+  "class_name": "French_bulldog"
+}
+```
 
 ## Standout Suggestions
 **TODO (Optional):** This is where you can provide information about any standout suggestions that you have attempted.
+
