@@ -80,8 +80,31 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Profiling
 1. Enabling Profiling Tools:
-SageMaker Profiler was configured to monitor system resource usage (CPU, GPU, memory, I/O, etc.) during training
+SageMaker Profiler was configured to monitor system resource usage (CPU, GPU, memory, I/O, etc.) during training. Here are the first roecored rows:
 
+```
+                     timestamp  timestamp_us        value                      system_metric          dimension  nodeID     type 
+0   2024-12-08T05:48:39:508406      39508406         6.18                  MemoryUsedPercent                     algo-1   memory  
+1   2024-12-08T05:48:40:008990      40008990         0.00                               IOPS                     algo-1      i/o  
+2   2024-12-08T05:48:40:008990      40008990         0.00     ReadThroughputInBytesPerSecond                     algo-1      i/o  
+3   2024-12-08T05:48:40:008990      40008990         0.00    WriteThroughputInBytesPerSecond                     algo-1      i/o  
+4   2024-12-08T05:48:40:009090      40009090        98.00                               cpu0     CPUUtilization  algo-1      cpu  
+5   2024-12-08T05:48:40:009090      40009090        14.00                               cpu0  I/OWaitPercentage  algo-1      cpu  
+6   2024-12-08T05:48:40:009090      40009090        89.58                               cpu1     CPUUtilization  algo-1      cpu  
+7   2024-12-08T05:48:40:009090      40009090         4.17                               cpu1  I/OWaitPercentage  algo-1      cpu  
+8   2024-12-08T05:48:40:009163      40009163         6.75                  MemoryUsedPercent                     algo-1   memory  
+9   2024-12-08T05:48:40:013693      40013693         0.00              ReceiveBytesPerSecond          Algorithm  algo-1  network  
+10  2024-12-08T05:48:40:013693      40013693         0.00             TransmitBytesPerSecond          Algorithm  algo-1  network  
+11  2024-12-08T05:48:40:013693      40013693  66775126.66              ReceiveBytesPerSecond           Platform  algo-1  network  
+12  2024-12-08T05:48:40:013693      40013693     70864.81             TransmitBytesPerSecond           Platform  algo-1  network  
+13  2024-12-08T05:48:40:508502      40508502         7.32                  MemoryUsedPercent                     algo-1   memory  
+14  2024-12-08T05:48:40:508563      40508563        98.04                               cpu0     CPUUtilization  algo-1      cpu  
+15  2024-12-08T05:48:40:508563      40508563         3.92                               cpu0  I/OWaitPercentage  algo-1      cpu  
+16  2024-12-08T05:48:40:508563      40508563       100.00                               cpu1     CPUUtilization  algo-1      cpu  
+17  2024-12-08T05:48:40:508563      40508563         6.00                               cpu1  I/OWaitPercentage  algo-1      cpu  
+18  2024-12-08T05:48:40:508622      40508622      5357.94                               IOPS                     algo-1      i/o  
+19  2024-12-08T05:48:40:508622      40508622   8970700.56     ReadThroughputInBytesPerSecond                     algo-1      i/o  
+```
 
 
 ### Results
